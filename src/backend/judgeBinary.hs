@@ -9,13 +9,9 @@ judgeBinary :: String -> Integer -> [Testcase] -> IO [Bool]
 judgeBinary progName timeLimit = mapM (judge progName)
   where
     judge progName t = do
-      t0 <- getTime Realtime
-      let t0_s = sec t0
-      let t0_n = nsec t0
+      TimeSpec t0_s t0_n <- getTime Realtime
       (e, out, err) <- readProcessWithExitCode progName [] (fst t)
-      t1 <- getTime Realtime
-      let t1_s = sec t1
-      let t1_n = nsec t1
+      TimeSpec t1_s t1_n <- getTime Realtime
       return $
         e == ExitSuccess
           && out == snd t
