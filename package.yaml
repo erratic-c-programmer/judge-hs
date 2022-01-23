@@ -21,14 +21,14 @@ description:         Please see the README on GitHub at <https://github.com/gith
 
 dependencies:
 - base >= 4.7 && < 5
-- clock >= 0.4
+- clock >= 0.8
 
 library:
   source-dirs: src
   ghc-options:
   - -package process
   dependencies: 
-    - clock >= 0.4
+    - clock >= 0.8
 
 executables:
   judge-exe:
