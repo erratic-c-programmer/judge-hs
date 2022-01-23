@@ -5,7 +5,7 @@ import System.Process
 
 type Testcase = (String, String)
 
-judgeBinary :: String -> Integer -> [Testcase] -> IO [Bool]
+judgeBinary :: String -> Int -> [Testcase] -> IO [Bool]
 judgeBinary progName timeLimit = mapM (judge progName)
   where
     judge progName t = do
