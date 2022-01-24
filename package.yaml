@@ -28,9 +28,12 @@ library:
   source-dirs: src
   ghc-options:
   - -package process
+  - -package directory
+  - -package text
   dependencies: 
     - clock >= 0.8
     - monad-parallel >= 0.7
+    - split >= 0.2
 
 executables:
   judge-exe:

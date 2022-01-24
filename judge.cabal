@@ -30,11 +30,12 @@ library
       Paths_judge
   hs-source-dirs:
       src
-  ghc-options: -package process
+  ghc-options: -package process -package directory -package text
   build-depends:
       base >=4.7 && <5
     , clock >=0.8
     , monad-parallel >=0.7
+    , split >=0.2
   default-language: Haskell2010
 
 executable judge-exe
