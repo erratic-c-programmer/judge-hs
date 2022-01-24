@@ -15,4 +15,4 @@ judgeBinary progName timeLimit = mapM (judge progName)
       return $
         e == ExitSuccess
           && out == snd t
-          && toNanoSecs (t1 - t0) <= (timeLimit * 1000)
+          && toNanoSecs (t1 - t0) <= (timeLimit * 1000000)
