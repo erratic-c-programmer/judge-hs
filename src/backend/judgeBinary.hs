@@ -1,12 +1,14 @@
-import Debug.Trace
-import System.Clock
-import System.Exit
-import System.Process
+{-# LANGUAGE ScopedTypeVariables #-}
+
+import qualified Control.Monad.Parallel as PMon
+import System.Clock (Clock (Monotonic), getTime, toNanoSecs)
+import System.Exit (ExitCode (ExitSuccess))
+import System.Process (readProcessWithExitCode)
 
 type Testcase = (String, String)
 
 judgeBinary :: String -> Integer -> [Testcase] -> IO [Bool]
-judgeBinary progName timeLimit = mapM (judge progName)
+judgeBinary progName timeLimit = PMon.mapM (judge progName)
   where
     judge progName t = do
       t0 <- getTime Monotonic

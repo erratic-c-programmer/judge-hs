@@ -1,7 +1,7 @@
 name:                judge
 version:             0.1.0.0
 github:              "githubuser/judge"
-license:             GPL3
+license:             GPL-3
 author:              "Author name here"
 maintainer:          "example@example.com"
 copyright:           "2022 Author name here"
@@ -22,6 +22,7 @@ description:         Please see the README on GitHub at <https://github.com/gith
 dependencies:
 - base >= 4.7 && < 5
 - clock >= 0.8
+- monad-parallel >= 0.7
 
 library:
   source-dirs: src
@@ -29,6 +30,7 @@ library:
   - -package process
   dependencies: 
     - clock >= 0.8
+    - monad-parallel >= 0.7
 
 executables:
   judge-exe:
