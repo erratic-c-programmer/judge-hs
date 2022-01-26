@@ -44,7 +44,7 @@ readTCDir dirName = do
   tcfs <- catch (listDirectory dirName) (\(_ :: SomeException) -> return [])
   -- not the most efficient (amortised quadratic), but it doesn't really matter
   let nosufs =
-        let xs = mapMaybe (stripSuffix ".in") $ filter (isSuffixOf ".in") tcfs
+        let xs = mapMaybe (stripSuffix ".in") tcfs
          in filter (\x -> x ++ ".out" `elem` tcfs) xs
   let ins = map (\x -> dirName ++ "/" ++ x ++ ".in") nosufs
   let outs = map (\x -> dirName ++ "/" ++ x ++ ".out") nosufs
