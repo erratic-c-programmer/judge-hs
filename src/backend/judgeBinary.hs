@@ -29,16 +29,13 @@ judgeBinaryTCs progName timeLimit = PMon.mapM $ PMon.mapM $ judge progName
 {-
   testcase directory structure:
   [problem]
-      1.1.in
-      1.2.out
-      2.1.in
-      2.2.out
-      ...
-      i.N.in
-      i.N.out
-    2
+    1.1.in
+    1.2.out
+    2.1.in
+    2.2.out
     ...
-    N
+    i.N.in
+    i.N.out
 -}
 
 readTCDir :: String -> IO [Testcase]
