@@ -22,7 +22,10 @@ description:         Please see the README on GitHub at <https://github.com/gith
 dependencies:
 - base >= 4.7 && < 5
 - clock >= 0.8
+- extra >= 1.7
 - monad-parallel >= 0.7
+- split >= 0.2
+- strict >= 0.4
 
 library:
   source-dirs: src
@@ -32,8 +35,10 @@ library:
   - -package text
   dependencies: 
     - clock >= 0.8
+    - extra >= 1.7
     - monad-parallel >= 0.7
     - split >= 0.2
+    - strict >= 0.4
 
 executables:
   judge-exe:
