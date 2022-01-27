@@ -56,7 +56,7 @@ readTCDir dirName = do
   let ins = map (\x -> dirName ++ "/" ++ x ++ ".in") nosufs
   let outs = map (\x -> dirName ++ "/" ++ x ++ ".out") nosufs
 
-  groupBy getSubTask . sortOn fst <$> zipWithM ftoTC ins outs
+  map (map snd) . groupBy getSubTask . sortOn fst . zip ins <$> zipWithM ftoTC ins outs
   where
     ftoTC i o = (,) <$> StrictIO.readFile i <*> StrictIO.readFile o
     getSubTask (s1, _) (s2, _) = takeWhile (/= '.') s1 == takeWhile (/= '.') s2
