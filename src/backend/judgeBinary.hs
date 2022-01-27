@@ -1,26 +1,33 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 
-import Control.Exception
+import Control.Exception (catch, SomeException)
 import Control.Monad (zipWithM)
 import qualified Control.Monad.Parallel as PMon
 import Data.List.Extra (isSuffixOf, sortBy, stripSuffix)
-import Data.List.Split (splitOn)
 import Data.Maybe (mapMaybe)
 import System.Clock (Clock (Monotonic), getTime, toNanoSecs)
 import System.Directory
-import System.Exit
+import System.Exit (ExitCode(ExitSuccess))
 import qualified System.IO.Strict as StrictIO
 import System.Process (readProcessWithExitCode)
 import Text.Read (readMaybe)
 
 type Testcase = (String, String)
+data Runnables = SchemeFile String | PythonFile String | GenericBinary String
 
-judgeBinaryTCs :: String -> Integer -> [[Testcase]] -> IO [[Bool]]
-judgeBinaryTCs progName timeLimit = PMon.mapM $ PMon.mapM $ judge progName
+runSubmission :: Runnables -> (String -> IO (ExitCode, String, String))
+runSubmission r =
+  case r of
+    SchemeFile fp -> readProcessWithExitCode "scheme" [fp]
+    PythonFile fp -> readProcessWithExitCode "python" [fp]
+    GenericBinary fp -> readProcessWithExitCode fp []
+
+judgeBinaryTCs :: Runnables -> Integer -> [[Testcase]] -> IO [[Bool]]
+judgeBinaryTCs prog timeLimit = PMon.mapM $ PMon.mapM $ judge prog
   where
-    judge progName t = do
+    judge prog t = do
       t0 <- getTime Monotonic
-      (e, out, err) <- readProcessWithExitCode progName [] (fst t)
+      (e, out, err) <- runSubmission prog (fst t)
       t1 <- getTime Monotonic
       return $
         e == ExitSuccess
