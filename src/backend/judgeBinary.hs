@@ -3,7 +3,7 @@
 import Control.Exception (catch, SomeException)
 import Control.Monad (zipWithM)
 import qualified Control.Monad.Parallel as PMon
-import Data.List.Extra (isSuffixOf, sortBy, stripSuffix)
+import Data.List.Extra (isSuffixOf, groupBy, sortOn, stripSuffix)
 import Data.Maybe (mapMaybe)
 import System.Clock (Clock (Monotonic), getTime, toNanoSecs)
 import System.Directory
@@ -46,7 +46,7 @@ judgeBinaryTCs prog timeLimit = PMon.mapM $ PMon.mapM $ judge prog
     i.N.out
 -}
 
-readTCDir :: String -> IO [Testcase]
+readTCDir :: String -> IO [[Testcase]]
 readTCDir dirName = do
   tcfs <- catch (listDirectory dirName) (\(_ :: SomeException) -> return [])
   -- not the most efficient (amortised quadratic), but it doesn't really matter
@@ -56,6 +56,7 @@ readTCDir dirName = do
   let ins = map (\x -> dirName ++ "/" ++ x ++ ".in") nosufs
   let outs = map (\x -> dirName ++ "/" ++ x ++ ".out") nosufs
 
-  zipWithM ftoTC ins outs
+  groupBy getSubTask . sortOn fst <$> zipWithM ftoTC ins outs
   where
     ftoTC i o = (,) <$> StrictIO.readFile i <*> StrictIO.readFile o
+    getSubTask (s1, _) (s2, _) = takeWhile (/= '.') s1 == takeWhile (/= '.') s2
