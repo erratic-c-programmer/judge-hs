@@ -1,11 +1,13 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 
-module SubmissionJudge
+-- |
+--  Everything to do with testcases, running submissions, judging code etc.
+module Backend.SubmissionJudge
   ( Testcase,
-    Runnables,
+    Runnable,
     readTCDir,
     runSubmission,
-    judgeSubmission,
+    evalSubmission,
   )
 where
 
@@ -21,22 +23,25 @@ import qualified System.IO.Strict as StrictIO
 import System.Process (readProcessWithExitCode)
 import Text.Read (readMaybe)
 
+-- | Alias for a tuple representing a testcase: (input, output).
 type Testcase = (String, String)
 
-data Runnables = SchemeFile String | PythonFile String | GenericBinary String
+-- | Datatype representing some runnable thing.
+data Runnable = SchemeFile String | PythonFile String | GenericBinary String
 
-{-
-  testcase directory structure:
-  [problem]
-    1.1.in
-    1.2.out
-    2.1.in
-    2.2.out
-    ...
-    i.N.in
-    i.N.out
--}
-
+-- |
+--  Parses a directory of testcases into a `[[Testcase]]`. Takes a path to a directory and
+--  returns a list of subtasks, each containing seperate testcases.
+--
+--  Testcase directory structure is as follows:
+--  [problem]
+--    1.1.in
+--    1.2.out
+--    2.1.in
+--    2.2.out
+--    ...
+--    i.N.in
+--    i.N.out
 readTCDir :: String -> IO [[Testcase]]
 readTCDir dirName = do
   tcfs <- catch (listDirectory dirName) (\(_ :: SomeException) -> return [])
@@ -52,15 +57,20 @@ readTCDir dirName = do
     ftoTC i o = (,) <$> StrictIO.readFile i <*> StrictIO.readFile o
     getSubTask (s1, _) (s2, _) = takeWhile (/= '.') s1 == takeWhile (/= '.') s2
 
-runSubmission :: Runnables -> [String] -> (String -> IO (ExitCode, String, String))
+-- |
+--  Pattern-matches on a `Runnable` to determine how to run it. Takes a `Runnable` and returns
+--  a function that, when given a String, runs the `Runnable` with the given String as an stdin.
+runSubmission :: Runnable -> [String] -> (String -> IO (ExitCode, String, String))
 runSubmission r options =
   case r of
     SchemeFile fp -> readProcessWithExitCode "scheme" (fp : options)
     PythonFile fp -> readProcessWithExitCode "python" (fp : options)
     GenericBinary fp -> readProcessWithExitCode fp options
 
-judgeSubmission :: Runnables -> [String] -> Integer -> [[Testcase]] -> IO [[Bool]]
-judgeSubmission prog options timeLimit = PMon.mapM $ PMon.mapM $ judge prog
+-- | Evaluates a submission with testcases. Runs a submission on testcases in parallel, and returns
+--   a Boolean result per testcase.
+evalSubmission :: Runnable -> [String] -> Integer -> [[Testcase]] -> IO [[Bool]]
+evalSubmission prog options timeLimit = PMon.mapM $ PMon.mapM $ judge prog
   where
     judge prog t = do
       t0 <- getTime Monotonic
