@@ -4,7 +4,7 @@
 --  Everything to do with testcases, running submissions, judging code etc.
 module Backend.SubmissionJudge
   ( Testcase,
-    Runnable,
+    Runnable(SchemeFile, PythonFile, GenericBinary),
     readTCDir,
     runSubmission,
     evalSubmission,
