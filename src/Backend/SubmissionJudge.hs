@@ -13,8 +13,9 @@ where
 
 import Control.Exception (SomeException, catch)
 import Control.Monad (zipWithM)
+import Control.Monad.Extra (concatMapM)
 import qualified Control.Monad.Parallel as PMon
-import Data.List.Extra (groupBy, isSuffixOf, sortOn, stripSuffix)
+import Data.List.Extra (groupBy, isSuffixOf, sortOn, stripSuffix, chunksOf)
 import Data.Maybe (mapMaybe)
 import System.Clock (Clock (Monotonic), getTime, toNanoSecs)
 import System.Directory
@@ -30,18 +31,12 @@ type Testcase = (String, String)
 data Runnable = SchemeFile String | PythonFile String | GenericBinary String
 
 -- |
---  Parses a directory of testcases into a `[[Testcase]]`. Takes a path to a directory and
+--  Parses a directory of testcases into a @[[`Testcase`]]@. Takes a path to a directory and
 --  returns a list of subtasks, each containing seperate testcases.
 --
---  Testcase directory structure is as follows:
---  [problem]
---    1.1.in
---    1.2.out
---    2.1.in
---    2.2.out
---    ...
---    i.N.in
---    i.N.out
+--  Testcase directories should have @\<subtask\>.\<testcase\>.{in,out}@, where @subtask@ and
+--  @testcase@ are natural numbers. All input\/output files without corresponding output\/input
+--  files will be ignored, as well as all other files in different formats in the filename.
 readTCDir :: String -> IO [[Testcase]]
 readTCDir dirName = do
   tcfs <- catch (listDirectory dirName) (\(_ :: SomeException) -> return [])
@@ -63,14 +58,14 @@ readTCDir dirName = do
 runSubmission :: Runnable -> [String] -> (String -> IO (ExitCode, String, String))
 runSubmission r options =
   case r of
-    SchemeFile fp -> readProcessWithExitCode "scheme" (fp : options)
-    PythonFile fp -> readProcessWithExitCode "python" (fp : options)
+    SchemeFile fp -> readProcessWithExitCode "scheme" $ options ++ [fp]
+    PythonFile fp -> readProcessWithExitCode "python" $ options ++ [fp]
     GenericBinary fp -> readProcessWithExitCode fp options
 
 -- | Evaluates a submission with testcases. Runs a submission on testcases in parallel, and returns
 --   a Boolean result per testcase.
-evalSubmission :: Runnable -> [String] -> Integer -> [[Testcase]] -> IO [[Bool]]
-evalSubmission prog options timeLimit = PMon.mapM $ PMon.mapM $ judge prog
+evalSubmission :: Runnable -> [String] -> Int -> Int -> [[Testcase]] -> IO [[Bool]]
+evalSubmission prog options maxBatch timeLimit tcs = concatMapM (PMon.mapM $ PMon.mapM $ judge prog) (chunksOf maxBatch tcs)
   where
     judge prog t = do
       t0 <- getTime Monotonic
@@ -79,4 +74,4 @@ evalSubmission prog options timeLimit = PMon.mapM $ PMon.mapM $ judge prog
       return $
         e == ExitSuccess
           && out == snd t
-          && toNanoSecs (t1 - t0) <= timeLimit * 1000000
+          && toNanoSecs (t1 - t0) <= fromIntegral timeLimit * 1000000
