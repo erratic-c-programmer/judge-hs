@@ -2,7 +2,7 @@
 
 -- |
 --  Everything to do with testcases, running submissions, judging code etc.
-module Backend.SubmissionJudge
+module Submissions.Judge
   ( Testcase,
     Runnable(SchemeFile, PythonFile, GenericBinary),
     readTCDir,
