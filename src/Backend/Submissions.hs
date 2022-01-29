@@ -2,14 +2,7 @@
 
 -- |
 --  Everything to do with testcases, running submissions, judging code etc.
-module Submissions.Judge
-  ( Testcase,
-    Runnable(SchemeFile, PythonFile, GenericBinary),
-    readTCDir,
-    runSubmission,
-    evalSubmission,
-  )
-where
+module Backend.Submissions where
 
 import Control.Exception (SomeException, catch)
 import Control.Monad (zipWithM)

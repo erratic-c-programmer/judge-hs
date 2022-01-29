@@ -13,7 +13,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
 
-module Database.AppDB where
+module Backend.AppDB where
 
 import Data.Text (Text)
 import Database.Persist
@@ -28,20 +28,39 @@ derivePersistField "Language"
 share
   [mkPersist sqlSettings, mkMigrate "migrateTables"]
   [persistLowerCase|
+    User
+      -- | username
+      uname Text
+      -- | account creation time; stored as seconds since the epoch
+      creationtime Int
+      deriving Show
+
     Problem
       -- | this is displayed
       title Text
       -- | link to url, if any
       pdfurl Text Maybe
+      -- | problem tags; comma seperated
+      tags Text
       -- | time limit in microseconds
       tlimit Int
       deriving Show
+
     Submission
       -- | which problem this is for
-      problem ProblemId
+      problemid ProblemId
       -- | language the submission is written in
       language Language
+      -- | score of the submission, between 0 and 100 inclusive
+      score Int
       -- | actual code of the submission
       code Text
+      deriving Show
+
+    UserSolves
+      -- | id of user who solved problem
+      userid UserId
+      -- | id of submission
+      submissionid SubmissionId
       deriving Show
 |]

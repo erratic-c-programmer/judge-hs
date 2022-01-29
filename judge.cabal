@@ -25,9 +25,9 @@ source-repository head
 
 library
   exposed-modules:
-      Database.AppDB
+      Backend.AppDB
+      Backend.Submissions
       Lib
-      Submissions.Judge
   other-modules:
       Paths_judge
   hs-source-dirs:
