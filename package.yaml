@@ -27,6 +27,7 @@ dependencies:
 - split >= 0.2 && < 1
 - strict >= 0.4 && < 1
 - persistent >= 2.13 && < 3
+- persistent-sqlite >= 2.13 && < 3
 
 library:
   source-dirs: src

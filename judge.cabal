@@ -25,6 +25,7 @@ source-repository head
 
 library
   exposed-modules:
+      Database.AppDB
       Lib
       Submissions.Judge
   other-modules:
@@ -38,6 +39,7 @@ library
     , extra >=1.7
     , monad-parallel >=0.7
     , persistent >=2.13 && <3
+    , persistent-sqlite >=2.13 && <3
     , split >=0.2
     , strict >=0.4
   default-language: Haskell2010
@@ -56,6 +58,7 @@ executable judge-exe
     , judge
     , monad-parallel >=0.7 && <1
     , persistent >=2.13 && <3
+    , persistent-sqlite >=2.13 && <3
     , split >=0.2 && <1
     , strict >=0.4 && <1
   default-language: Haskell2010
@@ -75,6 +78,7 @@ test-suite judge-test
     , judge
     , monad-parallel >=0.7 && <1
     , persistent >=2.13 && <3
+    , persistent-sqlite >=2.13 && <3
     , split >=0.2 && <1
     , strict >=0.4 && <1
   default-language: Haskell2010
