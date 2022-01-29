@@ -21,27 +21,21 @@ description:         Please see the README on GitHub at <https://github.com/gith
 
 dependencies:
 - base >= 4.7 && < 5
-- clock >= 0.8 && < 1
-- extra >= 1.7 && < 2
-- monad-parallel >= 0.7 && < 1
-- split >= 0.2 && < 1
-- strict >= 0.4 && < 1
-- persistent >= 2.13 && < 3
-- persistent-sqlite >= 2.13 && < 3
 
 library:
   source-dirs: src
   ghc-options:
-  - -package process
   - -package directory
-  - -package text
   dependencies: 
-    - clock >= 0.8
-    - extra >= 1.7
-    - monad-parallel >= 0.7
-    - split >= 0.2
-    - strict >= 0.4
+    - base >= 4.7 && < 5
+    - clock >= 0.8 && < 1
+    - extra >= 1.7 && < 2
+    - monad-parallel >= 0.7 && < 1
+    - split >= 0.2 && < 1
+    - text >= 1.2 && < 3
     - persistent >= 2.13 && < 3
+    - persistent-sqlite >= 2.13 && < 3
+    - process-extras >= 0.7 && < 1
 
 executables:
   judge-exe:

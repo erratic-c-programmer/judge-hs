@@ -1,24 +1,27 @@
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 -- |
 --  Everything to do with testcases, running submissions, judging code etc.
 module Backend.Submissions where
 
+import Backend.AppDB
 import Control.Exception (SomeException, catch)
 import Control.Monad (zipWithM)
 import Control.Monad.Extra (concatMapM)
 import qualified Control.Monad.Parallel as PMon
-import Data.List.Extra (groupBy, isSuffixOf, sortOn, stripSuffix, chunksOf)
+import Data.List.Extra (groupBy, isSuffixOf, sortOn, chunksOf, stripSuffix)
 import Data.Maybe (mapMaybe)
 import System.Clock (Clock (Monotonic), getTime, toNanoSecs)
 import System.Directory
 import System.Exit (ExitCode (ExitSuccess))
-import qualified System.IO.Strict as StrictIO
-import System.Process (readProcessWithExitCode)
+import System.Process.Text (readProcessWithExitCode)
+import qualified Data.Text as T
+import qualified Data.Text.IO as TIO
 import Text.Read (readMaybe)
 
 -- | Alias for a tuple representing a testcase: (input, output).
-type Testcase = (String, String)
+type Testcase = (T.Text, T.Text)
 
 -- | Datatype representing some runnable thing.
 data Runnable = SchemeFile String | PythonFile String | GenericBinary String
@@ -42,13 +45,13 @@ readTCDir dirName = do
 
   map (map snd) . groupBy getSubTask . sortOn fst . zip ins <$> zipWithM ftoTC ins outs
   where
-    ftoTC i o = (,) <$> StrictIO.readFile i <*> StrictIO.readFile o
+    ftoTC i o = (,) <$> TIO.readFile i <*> TIO.readFile o
     getSubTask (s1, _) (s2, _) = takeWhile (/= '.') s1 == takeWhile (/= '.') s2
 
 -- |
 --  Pattern-matches on a `Runnable` to determine how to run it. Takes a `Runnable` and returns
 --  a function that, when given a String, runs the `Runnable` with the given String as an stdin.
-runSubmission :: Runnable -> [String] -> (String -> IO (ExitCode, String, String))
+runSubmission :: Runnable -> [String] -> (T.Text -> IO (ExitCode, T.Text, T.Text))
 runSubmission r options =
   case r of
     SchemeFile fp -> readProcessWithExitCode "scheme" $ options ++ [fp]
@@ -60,6 +63,7 @@ runSubmission r options =
 evalSubmission :: Runnable -> [String] -> Int -> Int -> [[Testcase]] -> IO [[Bool]]
 evalSubmission prog options maxBatch timeLimit tcs = concatMapM (PMon.mapM $ PMon.mapM $ judge prog) (chunksOf maxBatch tcs)
   where
+    judge :: Runnable -> Testcase -> IO Bool
     judge prog t = do
       t0 <- getTime Monotonic
       (e, out, err) <- runSubmission prog options (fst t)
