@@ -38,6 +38,8 @@ share
     Problem
       -- | this is displayed
       title Text
+      -- | problem directory; should minimally contain an desc and tc/
+      dir FilePath
       -- | link to url, if any
       pdfurl Text Maybe
       -- | problem tags; comma seperated

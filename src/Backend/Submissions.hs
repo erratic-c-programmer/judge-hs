@@ -2,55 +2,23 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 -- |
---  Everything to do with testcases, running submissions, judging code etc.
+--  Everything to do with running submissions, judging code etc.
 module Backend.Submissions where
 
-import Backend.AppDB
-import Control.Exception (SomeException, catch)
-import Control.Monad (zipWithM)
+import Backend.Problems
 import Control.Monad.Extra (concatMapM)
 import qualified Control.Monad.Parallel as PMon
-import Data.List.Extra (groupBy, isSuffixOf, sortOn, chunksOf, stripSuffix)
-import Data.Maybe (mapMaybe)
+import Data.List.Extra (chunksOf)
 import System.Clock (Clock (Monotonic), getTime, toNanoSecs)
-import System.Directory
 import System.Exit (ExitCode (ExitSuccess))
 import System.Process.Text (readProcessWithExitCode)
 import qualified Data.Text as T
-import qualified Data.Text.IO as TIO
-import Text.Read (readMaybe)
-
--- | Alias for a tuple representing a testcase: (input, output).
-type Testcase = (T.Text, T.Text)
 
 -- | Datatype representing some runnable thing.
 data Runnable = SchemeFile String | PythonFile String | GenericBinary String
 
--- |
---  Parses a directory of testcases into a @[[`Testcase`]]@. Takes a path to a directory and
---  returns a list of subtasks, each containing seperate testcases.
---
---  Testcase directories should have @\<subtask\>.\<testcase\>.{in,out}@, where @subtask@ and
---  @testcase@ are natural numbers. All input\/output files without corresponding output\/input
---  files will be ignored, as well as all other files in different formats in the filename.
-readTCDir :: String -> IO [[Testcase]]
-readTCDir dirName = do
-  tcfs <- catch (listDirectory dirName) (\(_ :: SomeException) -> return [])
-  -- not the most efficient (amortised quadratic), but it doesn't really matter
-  let nosufs =
-        let xs = mapMaybe (stripSuffix ".in") tcfs
-         in filter (\x -> x ++ ".out" `elem` tcfs) xs
-  let ins = map (\x -> dirName ++ "/" ++ x ++ ".in") nosufs
-  let outs = map (\x -> dirName ++ "/" ++ x ++ ".out") nosufs
-
-  map (map snd) . groupBy getSubTask . sortOn fst . zip ins <$> zipWithM ftoTC ins outs
-  where
-    ftoTC i o = (,) <$> TIO.readFile i <*> TIO.readFile o
-    getSubTask (s1, _) (s2, _) = takeWhile (/= '.') s1 == takeWhile (/= '.') s2
-
--- |
---  Pattern-matches on a `Runnable` to determine how to run it. Takes a `Runnable` and returns
---  a function that, when given a String, runs the `Runnable` with the given String as an stdin.
+-- | Pattern-matches on a `Runnable` to determine how to run it. Takes a `Runnable` and returns
+--   a function that, when given a String, runs the `Runnable` with the given String as an stdin.
 runSubmission :: Runnable -> [String] -> (T.Text -> IO (ExitCode, T.Text, T.Text))
 runSubmission r options =
   case r of
