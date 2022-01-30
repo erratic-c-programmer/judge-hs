@@ -55,6 +55,7 @@ executable judge-exe
   build-depends:
       base >=4.7 && <5
     , judge
+    , yesod >=1.6 && <2
   default-language: Haskell2010
 
 test-suite judge-test

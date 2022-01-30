@@ -47,6 +47,7 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - judge
+    - yesod >= 1.6 && < 2
 
 tests:
   judge-test:
